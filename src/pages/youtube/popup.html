@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    :root {
+      --text-color: #f1f1f1;
+      --button-bg: linear-gradient(174deg, #17181f 20%, #C10DC1 500%);
+      --hover-button-bg: linear-gradient(174deg, #0f1014 20%, #8a0b8a 500%);
+      --font: 1.3em;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+
+      width: 200px;
+    }
+
+    .button {
+      color: var(--text-color);
+      background-image: var(--button-bg);
+      border: none;
+      font-size: var(--font);
+
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-wrap: break-word;
+      line-height: 1.3em;
+      max-height: 5.2em;
+      padding-bottom: .5em;
+    }
+
+    .button:hover {
+      background-image: var(--hover-button-bg);
+    }
+
+    .settings {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      padding: 0;
+      margin: 0;
+      background-color: #3b3b3b;
+    }
+
+    .settings div {
+      color: var(--text-color);
+      height: 2em;
+
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+  </style>
+
+  <script defer src="./popup.js"></script>
+</head>
+
+<body>
+  <button id="yuji-download-video" class="button">Download Video</button>
+  <form class="settings" id="settings"></form>
+</body>
+
+</html>

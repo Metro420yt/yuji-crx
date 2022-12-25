@@ -1,0 +1,29 @@
+{
+  "name": "Yuji Extension",
+  "short_name": "Yuji",
+  "description": "Interact with yuji.app from any page",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "action": {
+    "enabled": false
+  },
+  "icons": {
+    "512": "/icon.png"
+  },
+  "offline_enabled": false,
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "https://*.yuji.app/*"
+  ],
+  "optional_host_permissions": [
+    "https://*.youtube.com/watch?*.",
+    "https://*.youtube.com/shorts/*.",
+    "https://*.discord.com/channels/*"
+  ]
+}
