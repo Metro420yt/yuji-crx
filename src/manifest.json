@@ -6,7 +6,8 @@
   "manifest_version": 3,
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "alarms"
   ],
   "action": {
     "enabled": false

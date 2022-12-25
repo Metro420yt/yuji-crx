@@ -5,7 +5,6 @@ window.onload = async () => {
     var guildId = tab.url.split('discord.com/')[1].split('/')[1]
     if (guildId === '@me') return;
 
-    debugger
     const res = await fetch(`https://yuji.app/api/guild/${guildId}`, {
         method: 'put',
         credentials: 'include'

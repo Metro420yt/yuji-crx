@@ -1,26 +1,10 @@
-// import 'chrome';
-const requests = {
-    config: 'https://yuji.app/extension/config',
+const urls = {
+    config: 'https://yuji.app/crx/config',
     // user: 'https://yuji.app/api/@me',
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
-    const data = {}
-    for (const key in requests) {
-        const op = requests[key]
-        const res = await fetch(op.url || op, {
-            credentials: 'same-origin',
-            method: op.method || 'put',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(op.headers || [])
-            },
-        })
-        if (res.status >= 500) continue;
-
-        data[key] = await res.json()
-    }
-    chrome.storage.sync.set(data)
+    get(urls)
     chrome.action.disable()
 });
 
@@ -54,3 +38,29 @@ chrome.tabs.onUpdated.addListener((...args) => {
 
     setPopup(page.popup, tab.id)
 })
+
+chrome.alarms.create('update', { periodInMinutes: 30 })
+chrome.alarms.onAlarm.addListener(a => {
+    if (a.name === 'update') get(urls)
+})
+
+async function get(reqs, setStorage = true) {
+    const data = {}
+    for (const key in reqs) {
+        const op = reqs[key]
+        const res = await fetch(op.url || op, {
+            credentials: 'same-origin',
+            method: op.method || 'put',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(op.headers || [])
+            },
+        })
+        if (res.status >= 500) continue;
+
+        data[key] = await res.json()
+    }
+
+    if (setStorage) chrome.storage.sync.set(data)
+    return data
+}
