@@ -18,7 +18,7 @@ window.onload = async () => {
         if (guild.loggedIn === false) {
             const e = document.createElement('a')
             e.innerText = 'Click to login'
-            e.href = 'https://yuji.app/login?page=closetab'
+            e.href = 'https://yuji.app/login?action=closetab'
             e.class = 'full-msg'
             e.target = 'blank'
 

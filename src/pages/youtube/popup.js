@@ -19,12 +19,11 @@ button.addEventListener('click', async () => {
   }
 
   var { config } = await chrome.storage.sync.get('config')
-  chrome.tabs.create({ url: `${config.downloader.baseUrl}?${querys.join('&')}` })
+  chrome.tabs.create({ url: `${config.baseUrl}?${querys.join('&')}` })
 })
 
 window.onload = async () => {
-  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true })
-  // const tab = await chrome.tabs.getCurrent()
+  const [tab] = await chrome.tabs.query({ active: true })
 
   if (
     !tab?.url
@@ -37,7 +36,7 @@ window.onload = async () => {
 
 
   var { config } = await chrome.storage.sync.get('config')
-  for (const s of config.downloader.settings) {
+  for (const s of config.settings) {
     const div = document.createElement('div')
     const input = document.createElement(s.tag || 'input')
     if (s.data) for (const key in s.data) input.dataset[key] = s.data[key]
