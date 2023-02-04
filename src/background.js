@@ -13,7 +13,7 @@ const popups = [
     },
     {
         popup: 'pages/discord/popup.html',
-        update: /discord.com\/channels\/[0-9]*\/[0-9]*/,
+        update: /discord\.com\/channels\/[0-9]*\/[0-9]*/,
     },
 ]
 
