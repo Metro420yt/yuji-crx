@@ -1,144 +1,148 @@
-var guild
 const loading = document.getElementById('loading')
+const settings = document.getElementById('settings')
+const outlink = document.getElementById('outlink')
+const saveBttn = document.getElementById('save')
+
 window.onload = async () => {
-    const tab = (await chrome.tabs.query({ active: true, lastFocusedWindow: true }))[0]
+    const tab = (await chrome.tabs.query({ active: true }))[0]
     var guildId = tab.url.split('discord.com/')[1].split('/')[1]
     if (guildId === '@me') return;
 
-    debugger
     const res = await fetch(`https://yuji.app/api/guild/${guildId}`, {
         method: 'put',
         credentials: 'include'
     })
-    if (res.status >= 500) {
-        return setTimeout(() => window.onload(), 500)
-    }
-    guild = await res.json()
-    if (res.status !== 200) {
-        console.log(guild, res)
-        if (guild.loggedIn === false) {
-            const e = document.createElement('a')
-            e.innerText = 'Click to login'
-            e.href = 'https://yuji.app/login?page=closetab'
-            e.class = 'full-msg'
-            e.target = 'blank'
+    if (res.status >= 500) return setTimeout(() => window.onload(), 1000)
+    loading.remove()
 
-            document.body.appendChild(e)
+    const guild = await res.json()
+    window.guild = guild
+    if (res.status !== 200) {
+        if (guild.loggedIn === false) {
+            document.getElementById('loginPrompt').style = null
+
+            outlink.remove()
+            saveBttn.remove()
         }
         else {
             const e = document.createElement('p')
             e.innerText = guild.error || guild.message || 'Unable to get server'
-            document.getElementById('serverSettings').appendChild(e)
-
-            // setTimeout(window.close, 5000)
+            settings.appendChild(e)
         }
-        loading.remove()
         return;
     };
 
-    const objFn = (object, addto) => {
-        for (const key in object) {
-            const div = document.createElement('div')
-            div.setAttribute('class', 'item')
+    upsertInfo()
 
-            if (typeof object[key] === 'boolean') {
-                const input = document.createElement('input')
-                input.setAttribute('type', 'checkbox')
-                input.id = key
-                if (object[key]) input.setAttribute('checked', '')
-
-                const p = document.createElement('p')
-                p.innerText = key
-
-                div.appendChild(input)
-                div.appendChild(p)
-            }
-            else if (typeof object[key] === 'string') {
-                const input = document.createElement('input')
-                input.setAttribute('type', 'text')
-                input.id = key
-                input.setAttribute('value', object[key])
-
-                const p = document.createElement('p')
-                p.innerText = key
-
-                div.appendChild(p)
-                div.appendChild(input)
-            }
-            else if (typeof object[key] === 'object') {
-                const e = document.createElement('div')
-
-                const p = document.createElement('p')
-                p.innerText = key
-
-                div.appendChild(e)
-                div.appendChild(p)
-
-                objFn(object[key], e)
-            }
-            addto.append(div)
-        }
-    }
-    const settings = document.getElementById('serverSettings')
-    objFn(guild.settings, settings)
-
-    const submit = document.createElement('div')
-    submit.setAttribute('class', 'button')
-    submit.innerText = 'Save'
-    settings.appendChild(submit)
-    submit.addEventListener('click', save)
-
-    const outlink = document.getElementById('outlink')
-    outlink.href = `https://yuji.app/server/${guildId}`
     outlink.style = null
+    saveBttn.style = null
 
-    loading.style.display = 'none'
+    outlink.addEventListener('click', () => chrome.tabs.create({ url: `https://yuji.app/server/${guild.guildID}` }))
+    saveBttn.addEventListener('click', ({ target }) => save(target))
+    loading.remove()
 }
 
-async function save() {
-    const settings = {}
-    const settingObjFn = (object) => {
-        for (const key in object) {
-            if (typeof object[key] === 'object') settingObjFn(object[key])
-            else settings[key] = object[key]
+function upsertInfo() {
+    const { guild } = window
+
+    const add = (key, value, addto, parent) => {
+        const oldElements = Array.from(document.querySelectorAll(`[data-key="${key}"]`))
+
+        const input = oldElements.find(e => e.tagName === 'INPUT') || document.createElement('input')
+        const text = oldElements.find(e => e.tagName === 'P') || document.createElement('p')
+
+
+        if (oldElements.length === 0) {
+            input.dataset.key = key
+            text.dataset.key = key
+            text.innerText = guild.conversion[key]
+
+            if (parent) {
+                input.dataset.parent = parent
+                text.dataset.parent = parent
+            }
+
+            if (typeof value === 'boolean') {
+                input.type = 'checkbox'
+                input.checked = value
+
+                addto.appendChild(input)
+                addto.appendChild(text)
+
+                const fn = ({ target }) => {
+                    const i = document.querySelector(`input[data-key="${target.dataset.key}"]`)
+                    i.checked = !i.checked || false
+                }
+                text.addEventListener('click', fn)
+                text.dataset.clickable = true
+            }
+            else if (typeof value === 'string') {
+                input.value = value
+                input.type = 'text'
+
+                const div = document.createElement('div')
+                div.appendChild(text)
+                div.appendChild(input)
+
+                addto.appendChild(div)
+            }
+            else if (typeof value === 'object') {
+                const sub = document.createElement('div')
+                sub.dataset.key = key
+                sub.classList = 'sub'
+
+                text.innerText = guild.conversion[`sub:${key}`]
+                sub.appendChild(text)
+
+                for (const k in value) add(k, value[k], sub, key)
+                addto.appendChild(sub)
+            }
+        }
+        else {
+            if (typeof value === 'boolean') input.checked = value
+            else if (typeof value === 'string') input.value = value
+            else if (typeof value === 'object') for (const k in value) add(k, value[k], input.parentElement, key)
         }
     }
-    settingObjFn(guild.settings)
 
-    const formSettings = {}
-    for (const e of Array.from(document.getElementById('serverSettings'))) formSettings[e.id] = e.type === 'checkbox' ? e.checked : e.value
+    for (const key in guild.settings) add(key, guild.settings[key], settings)
+}
 
-    const settingsDif = {}
-    for (const key in formSettings) if (formSettings[key] !== settings[key]) settingsDif[key] = formSettings[key]
-    console.log(settingsDif)
-    if (Object.keys(settingsDif).length === 0) return;
+async function save(target) {
+    const { guild } = window
+    const map = {}
+    const mapValues = (element) => {
+        const value = element.type === 'checkbox' ? element.checked : element.value
+        const parent = element.dataset.parent
+        const key = element.dataset.key
 
-    loading.style.display = 'block'
+        if ((guild.settings[key] || guild.settings[parent]?.[key]) === value) return;
+
+        if (parent && !map[parent]) map[parent] = {}
+        parent ? map[parent][key] = value : map[key] = value
+    }
+    Array.from(settings).forEach(e => mapValues(e))
+    if (map === {}) return;
+
+    target.innerText = 'Saving...'
+    target.style.cursor = 'not-allowed'
+    target.disabled = true
+
+    const body = { settings: map }
     const res = await fetch(`https://yuji.app/api/guild/${guild.guildID}`, {
         method: 'PATCH',
-        body: JSON.stringify({ settings: settingsDif }),
-        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
         },
+        credentials: 'include',
+        body: JSON.stringify(body)
     })
-    if (res.status >= 500) return alert('couldnt save')
-    guild = await res.json()
-    loading.style.display = 'none'
-    update()
-}
+    if (res.status >= 500) return;
 
-function update() {
-    const objFn = (object) => {
-        for (const key in object) {
-            if (typeof object[key] === 'object') objFn(object[key])
-            else {
-                const e = document.getElementById(key)
-                if (typeof object[key] === 'boolean') e.checked = object[key]
-                else if (typeof object[key] === 'string') e.value = object[key]
-            }
-        }
+    window.guild = await res.json()
+    upsertInfo()
 
-    }
-    objFn(guild.settings)
+    target.innerText = 'Save'
+    target.style = null
+    target.disabled = false
 }

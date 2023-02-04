@@ -1,16 +1,53 @@
-// import 'chrome';
-const requests = {
-    config: 'https://yuji.app/extension/config',
+const urls = {
+    config: 'https://ytdl.yuji.app/config',
     // user: 'https://yuji.app/api/@me',
 }
 
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(() => startup())
+chrome.runtime.onStartup.addListener(() => startup())
+
+const popups = [
+    {
+        popup: 'pages/youtube/popup.html',
+        update: /youtube\.com\/(watch\?|shorts\/)/,
+    },
+    {
+        popup: 'pages/discord/popup.html',
+        update: /discord\.com\/channels\/[0-9]*\/[0-9]*/,
+    },
+]
+
+
+chrome.tabs.onUpdated.addListener((...args) => {
+    const tab = args[2]
+
+    const page = popups.find(p => p.update.test(tab.url))
+    if (!page) return chrome.action.disable(args[0]);
+
+    setPopup(page.popup, args[0])
+})
+
+chrome.alarms.create('update', { periodInMinutes: 30 })
+chrome.alarms.onAlarm.addListener(a => {
+    if (a.name === 'update') get(urls)
+})
+
+
+function startup() {
+    get(urls)
+    chrome.action.disable()
+}
+function setPopup(dir, tabId) {
+    chrome.action.setPopup({ popup: dir, tabId })
+    chrome.action.enable(tabId)
+}
+async function get(reqs, setStorage = true) {
     const data = {}
-    for (const key in requests) {
-        const op = requests[key]
+    for (const key in reqs) {
+        const op = reqs[key]
         const res = await fetch(op.url || op, {
             credentials: 'same-origin',
-            method: op.method || 'put',
+            method: op.method,
             headers: {
                 'Content-Type': 'application/json',
                 ...(op.headers || [])
@@ -20,37 +57,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 
         data[key] = await res.json()
     }
-    chrome.storage.sync.set(data)
-    chrome.action.disable()
-});
 
-function setPopup(dir, tabId) {
-    try {
-        chrome.action.setPopup({ popup: dir, tabId })
-        chrome.action.enable(tabId)
-    } catch (e) {
-        console.log(e)
-        chrome.action.setPopup({ popup: dir })
-    }
+    if (setStorage) chrome.storage.sync.set(data)
+    return data
 }
-
-const pages = [
-    {
-        popup: 'pages/youtube/popup.html',
-        update: /youtube.com\/watch|\/shorts\//,
-    },
-    {
-        popup: 'pages/discord/popup.html',
-        update: /discord.com\/channels\/[0-9]*\/[0-9]*/,
-    },
-]
-
-
-chrome.tabs.onUpdated.addListener((...args) => {
-    const tab = args[2]
-
-    const page = pages.find(p => p.update.test(tab.url))
-    if (!page) return chrome.action.disable(tab.id);
-
-    setPopup(page.popup, tab.id)
-})

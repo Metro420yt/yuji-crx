@@ -12,7 +12,6 @@
       --bg: linear-gradient(174deg, #242424 20%, #000000 200%);
 
       --loading-size: 20px;
-
     }
 
     @keyframes spin {
@@ -40,6 +39,8 @@
     }
 
     body {
+      cursor: default;
+      background-image: var(--bg);
       margin: 0;
       display: flex;
       flex-direction: column;
@@ -47,49 +48,94 @@
       width: 300px;
       min-height: 50px;
       height: max-content;
-      background-image: var(--bg);
+
       color: var(--text-color);
+      font-family: Manrope, arial;
+      font-weight: 200;
+
+      padding: 0.5em .2em;
+      font-size: 1em;
     }
 
-    form {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: nowrap;
-      align-items: flex-start;
+    #settings:empty {
+      display: none;
+    }
+
+    #settings {
+      display: grid;
       margin: 10px 5px;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      background-color: #292929;
+      border-radius: 1em;
+      padding: .5em;
+      row-gap: .3em;
+      column-gap: .5rem;
     }
 
-    .item {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-    }
-
-
-    p {
+    #settings>* {
       margin: 0;
+      padding: 0;
     }
 
-    input {
-      margin: 0 10px;
+    #settings>div>* {
+      margin: inherit;
+      padding: inherit;
     }
 
-    input[type="checkbox"] {
-      margin-left: 0;
+    #settings>div {
+      display: grid;
+      grid-column: span 2;
+      grid-template-columns: inherit;
+      align-items: inherit;
+      row-gap: inherit;
+      column-gap: inherit;
     }
 
-    .button {
-      padding: 5px;
-      margin-top: 10px;
-      color: var(--text-color);
-      outline: var(--text-color) 1px solid;
-      text-decoration: none;
-      width: fit-content;
+    .sub {
+      margin-left: .2em !important;
     }
 
-    .button:hover {
-      outline-color: gray;
+    .sub>p:first-child {
+      font-weight: 400;
+      grid-column: span 2;
+    }
+
+    .sub>input:not(p:first-child) {
+      margin-left: 1em !important;
+    }
+
+    input[type="text"] {
+      background-color: transparent;
+      color: white;
+      border: solid white .1em;
+      border-radius: .2em;
+    }
+
+    button,
+    a {
+      background-color: #373737;
+      color: white;
+      border: solid white .1em;
+      border-radius: .2em;
       cursor: pointer;
+      width: max-content;
+      padding: .1em 1em !important;
+      margin: .3em .1em !important;
+      text-decoration: none;
+    }
+
+    button:hover:not(:disabled),
+    a:hover {
+      background-color: #505050;
+    }
+
+    [data-clickable="true"] {
+      cursor: pointer;
+    }
+
+    [data-clickable="true"]:hover {
+      background-color: #8484843f;
     }
   </style>
 
@@ -97,10 +143,13 @@
 </head>
 
 <body>
+  <a id="loginPrompt" href="https://yuji.app/login?action=closetab" target="_blank" style="display: none;">Click to
+    Login</a>
   <div class="loading" id="loading"></div>
 
-  <form id="serverSettings"></form>
-  <a class="button" id="outlink" target="_blank" style="display: none;">Edit on Yuji.app</a>
+  <form id="settings"></form>
+  <button id="save" style="display: none;">Save</button>
+  <button id="outlink" style="display: none;">Edit on Yuji.app</button>
 </body>
 
 </html>
