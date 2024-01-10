@@ -18,7 +18,7 @@ button.addEventListener('click', async () => {
     if (s.type === 'checkbox' && s.checked) querys.push(s.dataset.query)
   }
 
-  var { config } = await chrome.storage.sync.get('config')
+  var { config } = await chrome.storage.local.get('config')
   chrome.tabs.create({ url: `${config.baseUrl}?${querys.join('&')}` })
 })
 
@@ -35,7 +35,7 @@ window.onload = async () => {
   }
 
 
-  var { config } = await chrome.storage.sync.get('config')
+  var { config } = await chrome.storage.local.get('config')
   for (const s of config.settings) {
     const div = document.createElement('div')
     const input = document.createElement(s.tag || 'input')
