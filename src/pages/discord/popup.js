@@ -122,7 +122,7 @@ async function save(target) {
         parent ? map[parent][key] = value : map[key] = value
     }
     Array.from(settings).forEach(e => mapValues(e))
-    if (map === {}) return;
+    if (Object.keys(map).length === 0) return;
 
     target.innerText = 'Saving...'
     target.style.cursor = 'not-allowed'
