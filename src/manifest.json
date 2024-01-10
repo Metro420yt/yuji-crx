@@ -1,13 +1,13 @@
 {
-  "name": "Yuji Extension",
-  "short_name": "Yuji",
-  "description": "Interact with yuji.app from any page",
-  "version": "1.0.1",
-  "version_name": "1.0.1 Stable",
+  "name": "Yuji",
+  "description": "Easily Interact with yuji.app",
+  "version": "1.1.0",
   "minimum_chrome_version": "88",
   "manifest_version": 3,
+  "incognito": "split",
   "permissions": [
     "tabs",
+    "scripting",
     "storage",
     "alarms"
   ],
@@ -19,15 +19,17 @@
   },
   "offline_enabled": false,
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "index.js",
+    "type": "module"
   },
   "host_permissions": [
     "https://*.yuji.app/*"
   ],
   "optional_host_permissions": [
-    "https://*.youtube.com/watch?.*",
-    "https://*.youtube.com/shorts/.*",
-    "https://*.discord.com/channels/.*"
+    "https://*.discord.com/channels/*",
+    "https://*.youtube.com/watch?*",
+    "https://*.youtube.com/shorts/*",
+    "https://*.twitch.tv/*"
   ],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv888VhPiYKJYwldEADgGQZeaDwoxWZNTDO1byTglu+s5HF7kSpHTKv8RjFefQbJ6jj2q+SXuWEdMhLvG8+xgSOrDmMoyZba0ZEAZSLHh4K/ZRWRKrB9C6iEvOk/HTwSrNjBTk7M6MVUuQYPHI007mU5675QJmqONUXDwDT7YZwyMvnI7NSf/uySgb0rxeNua6z0zx/pv1xzn+4+5vRkzeMbfIsIpSeE0g3gxGraygYKGoKxs0qF72kHhwM8QsJH8C8Gyjg8Yv8LAgqCga7k6AE9Viu59x5t7HoRj1bIrUhval7S011QrNQ7g1vqmS+LCoDRjIs7LXUZ+ZkRf+HJfRQIDAQAB"
 }

@@ -1,6 +1,8 @@
+import { default as twitchBg } from "./pages/twitch/background.js"
+const { name, version } = chrome.runtime.getManifest()
+
 const urls = {
-    config: 'https://ytdl.yuji.app/config',
-    // user: 'https://yuji.app/api/@me',
+    config: `https://yuji.app/crx/config`,
 }
 
 chrome.runtime.onInstalled.addListener(() => startup())
@@ -9,22 +11,30 @@ chrome.runtime.onStartup.addListener(() => startup())
 const popups = [
     {
         popup: 'pages/youtube/popup.html',
-        update: /youtube\.com\/(watch\?|shorts\/)/,
+        regex: /youtube\.com\/(watch\?|shorts\/)/,
     },
     {
         popup: 'pages/discord/popup.html',
-        update: /discord\.com\/channels\/[0-9]*\/[0-9]*/,
+        regex: /discord\.com\/channels\/[0-9]*\/[0-9]*/,
+    },
+    {
+        regex: /twitch\.tv\/([0-z])*$/,
+        background: twitchBg
     },
 ]
 
 
 chrome.tabs.onUpdated.addListener((...args) => {
     const tab = args[2]
+    if (tab.status !== 'complete') return;
 
-    const page = popups.find(p => p.update.test(tab.url))
+    const page = popups.find(p => p.regex.test(tab.url))
     if (!page) return chrome.action.disable(args[0]);
 
-    setPopup(page.popup, args[0])
+    if (page.popup) setPopup(page.popup, tab.id)
+    else chrome.action.disable(args[0]);
+
+    if (page.background) page.background(tab)
 })
 
 chrome.alarms.create('update', { periodInMinutes: 30 })
@@ -50,6 +60,8 @@ async function get(reqs, setStorage = true) {
             method: op.method,
             headers: {
                 'Content-Type': 'application/json',
+                'x-crx-agent': `-${name} ${version}`,
+                'x-crx-author': '@metro420yt (contact@yuji.app)',
                 ...(op.headers || [])
             },
         })
@@ -58,6 +70,6 @@ async function get(reqs, setStorage = true) {
         data[key] = await res.json()
     }
 
-    if (setStorage) chrome.storage.sync.set(data)
+    if (setStorage) chrome.storage.local.set(data)
     return data
 }
